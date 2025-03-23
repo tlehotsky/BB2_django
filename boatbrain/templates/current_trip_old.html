@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-center">
+    <h1 class="text-2xl font-bold text-center">Welcome to the BoatBrain Current Trip Page</h1>
+</div>
+
+<div class="flex justify-start mt-4">
+    <p>The number of Trip entries in the trip database are:  <span class="border rounded p-2" style="color: black; background-color: white; width: 15%;">{{ trip_log_data|length }}</span></p>
+    <br>
+</div>
+
+<div class="flex justify-start mt-4">
+    <label for="trip-log-select" class="mr-2">Select Trip Log:</label>
+    <select id="trip-log-select" name="trip_log" class="border rounded p-2" style="color: black; width: 16%;" onchange="showTripDetails(this.value)">
+        <option value="" disabled selected>Select a trip</option>
+        <option value="" disabled>Trip Id -  Trip Date</option>
+        {% for trip in trip_log_data|dictsortreversed:"trip_date" %}
+            <option value="{{ trip.trip_id }}">{{ trip.trip_id }} - {{ trip.trip_date }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div id="trip-details" class="mt-4" style="display: none;">
+    <table class="border-collapse border border-gray-400 w-full">
+        <tbody id="trip-details-body">
+            <!-- Trip details will be populated here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tripDataElement = document.getElementById('trip-log-data');
+        if (!tripDataElement) {
+            console.error("trip-log-data script element not found!");
+            return;
+        }
+
+        let tripData;
+        try {
+            tripData = JSON.parse(tripDataElement.textContent);
+            console.log("Trip data parsed successfully:", tripData);
+        } catch (error) {
+            console.error("Error parsing trip data JSON:", error);
+            return;
+        }
+
+        // Assign globally
+        window.showTripDetails = function(tripId) {
+            console.log("Selected trip ID:", tripId);
+            const trip = tripData.find(t => t.trip_id == tripId);
+            const tripDetailsBody = document.getElementById('trip-details-body');
+            tripDetailsBody.innerHTML = '';
+
+            if (trip) {
+                console.log("Trip details found:", trip);
+                for (const [key, value] of Object.entries(trip)) {
+                    const row = document.createElement('tr');
+                    const keyCell = document.createElement('td');
+                    const valueCell = document.createElement('td');
+
+                    keyCell.textContent = key;
+                    keyCell.classList.add('border', 'border-gray-400', 'p-2');
+                    valueCell.textContent = value;
+                    valueCell.classList.add('border', 'border-gray-400', 'p-2');
+
+                    row.appendChild(keyCell);
+                    row.appendChild(valueCell);
+                    tripDetailsBody.appendChild(row);
+                }
+                document.getElementById('trip-details').style.display = 'block';
+            } else {
+                console.log("No trip details found for the selected trip ID.");
+                document.getElementById('trip-details').style.display = 'none';
+            }
+        };
+
+        // Add event listener
+        const tripSelect = document.getElementById('trip-log-select');
+        if (tripSelect) {
+            tripSelect.addEventListener('change', function() {
+                showTripDetails(this.value);
+            });
+        } else {
+            console.error("Dropdown select element not found!");
+        }
+    });
+</script>
+
+<script id="trip-log-data" type="application/json">
+    {{ trip_log_data|safe }}
+</script>
+
+<style>
+    .trip-date-padding {
+        padding-left: 40px;
+    }
+</style>
+{% endblock %}

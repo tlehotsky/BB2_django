@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BoatBrain{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+{% load static %}
+<link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .fade-in {
+        animation: fadeIn 5s ease-in-out 2s;
+        opacity: 1;
+    }
+    
+    .content {
+        transition: margin-left 0.3s ease-in-out;
+    }
+</style>
+<body class="bg-gray-900 text-white font-sans">
+    <div class="flex h-screen flex-col">
+        <div class="flex flex-1">
+            <!-- Sidebar -->
+            <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-800 shadow-lg transform -translate-x-full transition-transform duration-300">
+                <ul class="mt-16">
+                    <li><a href="{% url 'home' %}" class="block py-4 px-6 text-gray-300 hover:bg-gray-700">Home</a></li>
+                    <li><a href="{% url 'log' %}" class="block py-4 px-6 text-gray-300 hover:bg-gray-700">Log</a></li>
+                    <li><a href="{% url 'current_trip' %}" class="block py-4 px-6 text-gray-300 hover:bg-gray-700">Current Trip</a></li>
+                    <li><a href="{% url 'about' %}" class="block py-4 px-6 text-gray-300 hover:bg-gray-700">What the hell is it</a></li>
+                    <li><a href="/admin/" class="block py-4 px-6 text-gray-300 hover:bg-gray-700">Admin</a></li> <!-- Update this line -->                </ul>
+            </div>
+            
+            <!-- Hamburger Menu -->
+            <button id="menu-toggle" class="absolute top-5 left-5 text-white focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
+            <!-- Main Content -->
+            <div id="main-content" class="content flex-1 p-10">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-gray-300 py-4 text-center">
+            <p>&copy; 2025 BoatBrain. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById("menu-toggle").addEventListener("click", function() {
+            let sidebar = document.getElementById("sidebar");
+            let content = document.getElementById("main-content");
+            
+            if (sidebar.classList.contains("-translate-x-full")) {
+                sidebar.classList.remove("-translate-x-full");
+                content.style.marginLeft = "16rem";
+            } else {
+                sidebar.classList.add("-translate-x-full");
+                content.style.marginLeft = "0";
+            }
+        });
+    </script>
+</body>
+</html>

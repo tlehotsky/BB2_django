@@ -1,0 +1,11 @@
+<!-- templates/home.html -->
+{% extends "base.html" %}
+{% load static %}  <!-- ✅ Load static tag library -->
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen">
+    <img src="{% static 'BB2.webp' %}?v={{ timestamp }}" alt="BoatBrain Image" class="w-auto max-w-full h-auto fade-in">
+
+</div>
+<!-- <img src="{% static 'BB2.webp' %}" alt="BoatBrain Image" class="w-auto max-w-full h-auto">       -->
+{% endblock %}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About BoatBrain</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 990px; /* Set the maximum width of the content */
+            margin: 0 auto; /* Center the content */
+            padding: 0 20px; /* Add some padding for smaller screens */
+        }
+        h1 {
+            font-size: 2.5em; /* Adjust the value as needed */
+            text-align: center; /* Center the text */
+        }
+        .center-content {
+            text-align: center;
+        }
+        .center-content img {
+            display: block;
+            margin: 0 auto;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px; /* Reduce padding for smaller screens */
+            }
+            body {
+                margin-left: 20px; /* Adjust the value as needed */
+                margin-right: 20px; /* Adjust the value as needed */
+            }
+        }
+    </style>
+    {% comment %} <link rel="stylesheet" href="{% static 'css/style.css' %}"> {% endcomment %}
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>About BoatBrain</h1>
+            <br>
+            <br>
+        </header>
+        <main>
+            <section>
+                <p>Even for recreational anglers, consistently finding fish means keeping track of all sorts of data, so I set out to build a ‘black box’ to automatically collect everything I could think of and store it online. It would track my movements for the whole trip, the GPS coordinates where I caught fish, air temp, water temp, air pressure, weather forecast, battery voltages, as well as other vitals, and upload it to the Internet. Then someone could go to the website I built and see the data in real time.</p>
+                <br>
+                <br>
+            </section>
+            <section class="center-content">
+                <img src="{% static 'BB1.png' %}" alt="Original BoatBrain">
+                <h2>Fig 1: The original BoatBrain or as I call it BB1</h2>
+                <br>
+                <br>
+            </section>
+            <section>
+                <br>
+                <p>I’m always looking to improve my fishing process, everything from how long it takes me to prep the boat (before leaving home) or how long it takes me to launch the boat (when I get to the lake). With this in mind I build the hardware and wrote the software so that the boat brain would collect all the data and time that it would take me to progress through the 10 stages of fishing.</p>
+                <br>
+            </section>
+            <section>
+                <p>After the hardware boots, two programs would load: the main program and a heartbeat monitor. The heartbeat program detects if the main program stops and reboots the hardware if necessary.</p>
+                <br>
+            </section>
+            <section>
+
+                <p>After the original Raspberry Pi board failed, I redesigned the system as BoatBrain2 (BB2) with an extruded aluminum frame and a hinged panel for easier access.</p>
+                <br>
+                <p>Here it is with the hinged Panel closed:</p>
+                <br>
+                <img src="{% static 'IMG_5798.png' %}" alt="BoatBrain2">
+                <br>
+                <br>
+                <p>Here it is with the hinged Panel open:</p>
+                <img src="{% static 'IMG_5799.png' %}" alt="BoatBrain2">
+                <br>
+                <br>
+                <br>
+                <p>This time I gave myself more space on the top panel as well.</p>
+                <br>
+                <br>
+                <img src="{% static 'IMG_5775.png' %}" alt="BoatBrain2">
+
+                </ul>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
+{% endblock %}

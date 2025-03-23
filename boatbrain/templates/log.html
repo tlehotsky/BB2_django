@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Add viewport meta tag for better mobile experience -->
+<meta name="viewport" content="width=device-width, initial-scale=.75">
+
+<style>
+    .radio-button {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #4A90E2; /* Default border */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .radio-button::after {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background-color: transparent; /* Initially empty */
+        border-radius: 50%;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .radio-button.selected::after {
+        background-color: #4A90E2; /* Fill in dot when selected */
+    }
+
+    .radio-container {
+        border: 1px solid white; /* Thin white border */
+        padding: 10px;
+        display: inline-flex;
+        border-radius: 5px; /* Optional: Rounded corners */
+        margin-bottom: 10px; /* Added space below radio buttons */
+        margin-top: 40px; /* Added space above radio buttons */
+        margin-right: 10px; /* Added space above radio buttons */
+    }
+
+    /* New CSS rule to reduce font size in the table */
+    table {
+        font-size: 9px; /* Adjust this value as needed */
+        table-layout: fixed; /* Ensures fixed layout */
+        width: 100%; /* Ensures table takes full width */
+    }
+
+    th, td {
+        padding: 0px; /* Adds padding to table cells */
+        text-align: left; /* Aligns text to the left */
+        border: 0px solid #ddd; /* Adds border to table cells */
+    }
+
+    th {
+        background-color: #c8dcf0; /* Background color for header */
+        color: black; /* Text color for header */
+        position: sticky; /* Makes header sticky */
+        top: 0; /* Sticks header to the top */
+        z-index: 2; /* Ensures header is above other content */
+        box-shadow: 0 4px 8px rgba(185, 20, 20, 0.1); /* Adds shadow to header */
+        text-align: center; /* Center-aligns text in header */
+    }
+
+    td {
+        word-wrap: break-word; /* Ensures words wrap within cells */
+        overflow-wrap: break-word; /* Ensures words wrap within cells */
+    }
+
+    /* Set specific widths for each column */
+    .col-timestamp {
+        width: 15%;
+    }
+
+    .col-log-level {
+        width: 6%;
+        text-align: center;
+    }
+
+    .col-stage {
+        width: 4%;
+        text-align: center;
+    }
+
+    .col-message {
+        width: 75%;
+        text-align: left;
+    }
+
+    /* Add a scrollbar to the table container */
+    .table-container {
+        max-height: 800px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        position: relative;
+        border-radius: 5px;
+    }
+
+    /* Highlight row on hover */
+    tr:hover {
+        background-color: #b23030; /* Adjust the color as needed */
+    }
+
+    /* Responsive design for mobile screens */
+    @media (max-width: 768px) {
+        .radio-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .table-container {
+            padding: 5px;
+        }
+
+        table {
+            font-size: 12px; /* Increase font size for better readability */
+        }
+
+        th, td {
+            padding: 5px; /* Increase padding for better touch targets */
+        }
+
+        .col-timestamp, .col-log-level, .col-stage, .col-message {
+            width: auto; /* Allow columns to adjust width automatically */
+        }
+
+        .flex {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .flex .space-x-8 {
+            margin-bottom: 20px;
+        }
+
+        .flex .space-x-8 > div {
+            width: 100%;
+            max-width: none;
+        }
+    }
+</style>
+
+<div class="flex justify-center">
+    <h1 class="text-2xl font-bold text-center">Welcome to the BoatBrain Log Page</h1>
+</div>
+
+<div class="text-left">
+    <br>
+    <p>The number of entries in the program log database is {{ log_entries }}.</p>
+    <p>The number of rows recording errors is {{ error_entries }}</p>
+    <br><br>
+
+    <!-- Debugging: Hide JSON output -->
+    <div id="debug-json" style="display: none;">
+        {{ graph_json_stage|escape }}
+        {{ graph_json_error_stage|escape }}
+        {{ graph_json_date|escape }}
+        {{ graph_json_function|escape }}
+        {{ graph_json_donut|escape }}
+        {{ graph_json_trip_donut|escape }}
+    </div>
+
+    <!-- Chart container -->
+    <div class="flex justify-start space-x-8">
+        <div id="bar-chart-stage" class="chart-container"></div>
+        <div id="bar-chart-error-stage" class="chart-container"></div>
+        <div id="bar-chart-date" class="chart-container"></div>
+    </div>
+    <br>
+    <div class="flex justify-start space-x-8">
+        <div id="bar-chart-function" class="chart-container"></div>
+        <div id="donut-chart" class="chart-container"></div>
+        <div id="trip-donut-chart" class="chart-container"></div>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="radio-container">
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="log-filter-date" value="all" onclick="filterLogsByDate('all')" class="hidden">
+            <div id="all-button" class="radio-button selected"></div>
+            <span>Show All Logs</span>
+        </label>
+    
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="log-filter-date" value="today" onclick="filterLogsByDate('today')" class="hidden">
+            <div id="today-button" class="radio-button"></div>
+            <span>Show Today's Logs</span>
+        </label>
+    </div>
+
+    <div class="radio-container">
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="log-filter-level" value="all" onclick="filterLogsByLevel('all')" class="hidden">
+            <div id="all-level-button" class="radio-button selected"></div>
+            <span>Show INFO and ERROR Logs</span>
+        </label>
+        
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="log-filter-level" value="info" onclick="filterLogsByLevel('info')" class="hidden">
+            <div id="info-button" class="radio-button"></div>
+            <span>Show INFO Logs</span>
+        </label>
+    
+        <label class="flex items-center space-x-2 cursor-pointer">
+            <input type="radio" name="log-filter-level" value="error" onclick="filterLogsByLevel('error')" class="hidden">
+            <div id="error-button" class="radio-button"></div>
+            <span>Show ERROR Logs</span>
+        </label>
+    </div>
+
+    <div id="log-count" class="text-lg mb-4 text-blue-500">Showing {{ log_table_data|length }} log entries.</div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-timestamp">Timestamp</th>
+                    <th class="col-log-level">Log Level</th>
+                    <th class="col-stage">Stage</th>
+                    <th class="col-message">Message</th>
+                </tr>
+            </thead>
+            <tbody id="log-table-body">
+                {% for entry in log_table_data %}
+                <tr data-date="{{ entry.timestamp.astimezone|date:'Y-m-d' }}">
+                    <td class="col-timestamp">{{ entry.timestamp }} (formatted: {{ entry.timestamp.astimezone|date:'Y-m-d' }})</td>
+                    <td class="col-log-level">{{ entry.log_level }}</td>
+                    <td class="col-stage">{{ entry.stage }}</td>
+                    <td class="col-message">{{ entry.log_message }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Include Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function applyBackground(chartId, data) {
+                if (data.layout) {
+                    data.layout.paper_bgcolor = "#4A4A4A";
+                    data.layout.plot_bgcolor = "#4A4A4A";
+                    data.layout.font = { color: "#FFFFFF" };
+                }
+
+                if (chartId === 'trip-donut-chart' && data.data) {
+                    data.data[0].labels = ["TEST", "REAL"]; // Ensure both labels are present
+                    data.data[0].values = data.data[0].values.length === 1 ? [data.data[0].values[0], 0] : data.data[0].values; 
+                    data.data[0].marker = { colors: ["red", "green"] }; // Set TEST to red and REAL to green
+                }
+
+                if (chartId === 'donut-chart' && data.data) {
+                    data.data[0].marker = { colors: ["green", "red"] };
+                }
+                if (chartId === 'bar-chart-function' && data.layout.xaxis) {
+                    data.layout.xaxis.tickfont = { size: 10 }; // Adjust size here
+                }
+                Plotly.newPlot(chartId, data.data, data.layout);
+            }
+
+            function loadChart(chartId, dataElementId) {
+                var dataElement = document.getElementById(dataElementId);
+                if (dataElement) {
+                    try {
+                        var chartData = JSON.parse(dataElement.textContent);
+                        if (!chartData.data || chartData.data.length === 0) {
+                            console.error("🚨 No data available for " + chartId + "!");
+                        } else {
+                            console.log("✅ Plotly data loaded for " + chartId, chartData);
+                            applyBackground(chartId, chartData);
+                        }
+                    } catch (error) {
+                        console.error("❌ Error parsing JSON for " + chartId + ":", error);
+                    }
+                }
+            }
+
+            function resizeCharts() {
+                loadChart('bar-chart-stage', 'bar-chart-stage-data');
+                loadChart('bar-chart-error-stage', 'bar-chart-error-stage-data');
+                loadChart('bar-chart-date', 'bar-chart-date-data');
+                loadChart('bar-chart-function', 'bar-chart-function-data');
+                loadChart('donut-chart', 'donut-chart-data');
+                loadChart('trip-donut-chart', 'trip-donut-chart-data');
+            }
+
+            window.addEventListener('resize', resizeCharts);
+
+            resizeCharts();
+        });
+    </script>
+
+    <!-- JSON data for Plotly -->
+    <script type="application/json" id="bar-chart-stage-data">
+        {{ graph_json_stage|safe }}
+    </script>
+
+    <script type="application/json" id="bar-chart-error-stage-data">
+        {{ graph_json_error_stage|safe }}
+    </script>
+
+    <script type="application/json" id="bar-chart-date-data">
+        {{ graph_json_date|safe }}
+    </script>
+
+    <script type="application/json" id="bar-chart-function-data">
+        {{ graph_json_function|safe }}
+    </script>
+
+    <script type="application/json" id="donut-chart-data">
+        {{ graph_json_donut|safe }}
+    </script>
+
+    <script type="application/json" id="trip-donut-chart-data">
+        {{ graph_json_trip_donut|safe }}
+    </script>
+
+    <script>
+        let currentDateFilter = 'all';
+        let currentLevelFilter = 'all';
+
+        function filterLogs() {
+            let rows = document.querySelectorAll('#log-table-body tr');
+            let today = new Date();
+            let todayFormatted = today.getFullYear() + '-' + 
+                String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(today.getDate()).padStart(2, '0'); // Ensures YYYY-MM-DD format
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                let rowDate = row.getAttribute('data-date');
+                let logLevel = row.querySelector('td:nth-child(2)').textContent.trim().toLowerCase();
+                let dateMatch = (currentDateFilter === 'all') || (rowDate === todayFormatted);
+                let levelMatch = (currentLevelFilter === 'all') || (logLevel === currentLevelFilter);
+
+                if (dateMatch && levelMatch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('log-count').textContent = `Showing ${visibleCount} log entries.`;
+        }
+
+        function filterLogsByDate(filterType) {
+            console.log("filterLogsByDate called with filterType:", filterType);
+            currentDateFilter = filterType;
+            filterLogs();
+
+            // Update the selected radio button style
+            document.querySelectorAll('input[name="log-filter-date"] + .radio-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById(filterType + "-button").classList.add('selected');
+        }
+
+        function filterLogsByLevel(filterType) {
+            console.log("filterLogsByLevel called with filterType:", filterType);
+            currentLevelFilter = filterType;
+            filterLogs();
+
+            // Update the selected radio button style
+            document.querySelectorAll('input[name="log-filter-level"] + .radio-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.getElementById(filterType + "-button").classList.add('selected');
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOM fully loaded and parsed");
+
+            // Set "Show All Logs" as the default selected radio button
+            document.getElementById("all-button").classList.add("selected");
+        });
+    </script>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    .hover-highlight:hover {
+        background-color: red;
+    }
+    .header-row {
+        background-color: white;
+        color: black;
+    }
+    .left-justify {
+        margin-left: 0;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    .small-font {
+        font-size: 75%;
+    }
+    .compact-rows tr {
+        line-height: 0.75; /* Reduces row height to 75% */
+    }
+</style>
+
+<div class="flex justify-center">
+    <h1 class="text-2xl font-bold text-center">Welcome to the BoatBrain Current Trip Page</h1>
+</div>
+
+<div class="flex justify-start mt-4">
+    <p>The number of Trip entries in the bb_trip_log database is:  <span class="border rounded p-2" style="color: black; background-color: white; width: 15%;">{{ number_trips }}</span></p>
+</div>
+
+<div class="flex justify-start mt-4">
+    <p>The ID number of the trip used for this page is:  <span class="border rounded p-2" style="color: black; background-color: white; width: 15%;">{{ this_trip_id }}</span></p>
+    <!-- <p>The ID number of the most recent Trip entry in the bb_trip_log database is:  <span class="border rounded p-2" style="color: black; background-color: white; width: 15%;">{{ last_trip_id }}</span></p> -->
+</div>
+
+<div class="flex justify-start mt-4">
+    <br>
+    <p>The date of the most recent entry in the trip database is:  <span class="border rounded p-2" style="color: black; background-color: white; width: 15%;">{{ last_trip_date }}</span></p>
+</div> 
+<br>
+<br>
+<div class="flex justify-start mt-4">
+    <br>
+    <p>The current stage number is:  <span class="border rounded p-2" style="color: black; background-color: white; width: 15%;">{{ current_stage }}</span></p>
+</div> 
+
+<div class="flex justify-start mt-4">
+    <p>The current stage description is:  {{ current_stage_description }}</p>
+</div> 
+<br>
+<br>
+<br>
+<br>
+
+
+<div class="flex justify-start mt-4">
+    <!-- First table -->
+    <div class="w-1/2 table-container text-center">
+        <div class="font-bold text-lg mb-2">Stage Durations</div>
+        <table class="table-auto border-collapse border border-gray-400 mx-auto">
+            <thead>
+                <tr class="header-row">
+                    <th class="border border-gray-300 px-4 py-2">Stage</th>
+                    <th class="border border-gray-300 px-4 py-2">Description</th>
+                    <th class="border border-gray-300 px-4 py-2">Start Time</th>
+                    <th class="border border-gray-300 px-4 py-2">End Time</th>
+                    <th class="border border-gray-300 px-4 py-2">Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stage in stages %}
+                <tr class="hover-highlight">
+                    <td class="border border-gray-300 px-4 py-2">Stage {{ forloop.counter0 }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ stage.Description }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ stage.start_time }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ stage.end_time }}</td>
+                    <td class="border border-gray-300 px-4 py-2">{{ stage.duration }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Folium map -->
+    <div class="w-1/2 flex flex-col justify-start ml-4">
+        <div class="text-center font-bold text-lg mb-2">Map of Fishing Trip</div>
+        <div style="width: 95%; border: 2px solid white; padding: 5px;">
+            {% if map_html %}
+                {{ map_html|safe }}
+            {% else %}
+                <p>No map data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<br>
+<br>
+<br>
+<br>
+
+<div class="table-container" style="margin-left: 55px; width: fit-content; margin-right: auto;">
+    <div class="font-bold text-lg mb-2 text-center" style="width: 100%;">On Water Log</div>
+    <table class="table-auto border-collapse border border-gray-400 left-justify small-font compact-rows">
+        <thead>
+            <tr class="header-row">
+                <th class="border border-gray-300 px-4 py-2" style="display: none;">Log ID</th>
+                <th class="border border-gray-300 px-4 py-2">Timestamp</th>
+                <th class="border border-gray-300 px-4 py-2">Date</th>
+                <th class="border border-gray-300 px-4 py-2">Latitude</th>
+                <th class="border border-gray-300 px-4 py-2">Longitude</th>
+                <th class="border border-gray-300 px-4 py-2">Event Entry</th>
+                <th class="border border-gray-300 px-4 py-2">Battery 1 Voltage</th>
+                <th class="border border-gray-300 px-4 py-2">Battery 2 Voltage</th>
+                <th class="border border-gray-300 px-4 py-2">Battery 3 Voltage</th>
+                <th class="border border-gray-300 px-4 py-2">Air Temp</th>
+                <th class="border border-gray-300 px-4 py-2">Air Pressure</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in onwater_log_data %}
+            <tr class="hover-highlight">
+                <td class="border border-gray-300 px-4 py-2" style="display: none;">{{ entry.onwater_log_id }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_timestamp }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_date }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_lat }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_lon }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_event_entry }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_batteryone_voltage }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_batterytwo_voltage }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_batterythree_voltage }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_air_temp }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ entry.onwater_air_press }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+cd /home/django/django_project
+
+python3 manage.py runserver
+
+python3 manage.py makemigrations boatbrain
+
+python3 manage.py migrate boatbrain
+
+
